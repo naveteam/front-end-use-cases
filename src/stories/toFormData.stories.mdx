@@ -5,7 +5,7 @@ import { toFormData } from '../helpers'
 
 # toFormData
 
-A função `toFormData` recebe um objeto como argumento e gera a partir dele um novo `FormData`, 
+A função `toFormData` recebe um objeto como argumento e gera a partir dele um novo `FormData`,
 usando as chaves como nomes e valores como valores
 
 ```js
@@ -16,5 +16,19 @@ const createUser = async data => {
   })
 
   await api.post('/users', formData)
+}
+```
+
+`toFormData` helper:
+
+```js
+const toFormData = object => {
+  const formData = new FormData()
+
+  for (const key in object) {
+    formData.append(key, object[key])
+  }
+
+  return formData
 }
 ```
