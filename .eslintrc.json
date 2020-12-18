@@ -1,0 +1,23 @@
+{
+  "env": { "browser": true, "es2021": true },
+  "extends": ["plugin:react/recommended", "standard", "plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaFeatures": { "jsx": true },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "plugins": ["react", "react-hooks", "prettier"],
+  "rules": {
+    "comma-dangle": ["error",  "never"],
+    "jsx-quotes": ["error", "prefer-single"],
+    "no-unused-vars": ["error",  { "ignoreRestSiblings": true }],
+    "no-trailing-spaces": "error",
+    "prettier/prettier": ["error",  { "endOfLine": "auto" }],
+    "quotes": ["error",  "single"],
+    "react/jsx-boolean-value": "off",
+    "react/jsx-uses-vars": "error",
+    "react-hooks/rules-of-hooks": "error",
+    "semi": ["error",  "never"],
+    "space-before-function-paren": "off"
+  }
+}

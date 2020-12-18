@@ -1,0 +1,27 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks'
+import { useDevice } from '../hooks'
+
+<Meta title='hooks/UseDevice' />
+
+# useDevice
+
+O hook `useDevice` verifica a largura da janela para determinar o dispositivo usado e nos oferece três `booleans`, que são:
+`isMobile`, `isTablet` e `isDesktop`. Com isso e possível utilizar valores diferentes e também renderizar elementos diferentes 
+baseado no dispositivo do usuário.
+
+<Preview>
+  <Story name='Default'>
+    {() => {
+      const { isMobile, isTablet, isDesktop } = useDevice()
+      return (
+        <p>
+          Device:{' '}
+          {isMobile && <strong>Mobile</strong>}
+          {isTablet && <strong>Tablet</strong>}
+          {isDesktop && <strong>Desktop</strong>}
+        </p>
+      )
+    }}
+  </Story>
+</Preview>
+
