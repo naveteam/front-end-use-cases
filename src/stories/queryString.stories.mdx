@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title='helpers/querySring' />
+
+# Objeto para query string
+
+Certo momento, pode ser necessário formatar um objeto para query-string com valores que são um array, para realizar uma request para a api ou para adicionar os parametros na url do sistema.
+O pacote `query-string` ajuda muito nesse sentido e é muito fácil de usar.
+
+```js
+import queryString from 'query-string'
+
+const object = {
+  userId: ['65321', '231321', '321321']
+}
+
+const queryParams = queryString.stringify(object)
+
+// queryParams
+// 'userId=65321&userId=231321&userId=321321'
+```
+
+Ele também faz a função inversa
+
+```js
+import queryString from 'query-string'
+
+const params = '?userId=65321&userId=231321&userId=321321'
+
+const object = queryString.parse(params)
+
+// object
+// { userId: [ '65321', '231321', '321321' ] }
+```
+
+Link do pacote: https://www.npmjs.com/package/query-string
