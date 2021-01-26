@@ -2,13 +2,15 @@
 
 Casos de uso de componentes e features que utilizamos no dia a dia
 
+[Storybook](https://naveteam.github.io/front-end-use-cases/)
+
 ## ❗️ Motivação
 
 No dia-a-dia nos deparamos com problemas que muitas das vezes já foram resolvidos por outros membros da empresa em outros projetos, mas mesmo assim gastamos tempo demais para
 pesquisar e chegar na mesma solução.
 
 Tendo isso em vista, criamos esse repositório para agregar esse conteúdo e documentá-lo, para que tenhamos um lugar onde possamos encontrar
-um caminho um pouco mais curto para nossas tarefas.  
+um caminho um pouco mais curto para nossas tarefas.
 
 ## 📂 Estrutura de Pastas
 

@@ -1,0 +1,13 @@
+export const isIOS = () => !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
+
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title='helpers/isIos' />
+
+# is IOS
+
+Essa função tem como objetivo identificar se o usuário está acessando o sistema através de um dispositivo iOS (iPad/iPhone/iPod)
+
+```js
+export const isIOS = () => !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
+```

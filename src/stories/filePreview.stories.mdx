@@ -1,0 +1,14 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title='helpers/filePreview' />
+
+# File Preview
+
+Essa função tem como objetivo fazer o preview de um arquivo que foi selecionado em um campo de um formulário, mas ainda não temos a URL disponível
+
+```js
+export const filePreview = file => {
+  const path = (window.URL || window.webkitURL).createObjectURL(file)
+  window.open(path)
+}
+```

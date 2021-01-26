@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title='helpers/downloadPdf' />
+
+# Download PDF
+
+Essa função tem como objetivo fazer o download de um arquivo PDF através de sua URL.
+
+```js
+const downloadPdf = async (fileURL, fileName) => {
+  const showFile = blob => {
+    const newBlob = new Blob([blob], { type: 'application/pdf' })
+
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(newBlob)
+      return
+    }
+
+    const data = window.URL.createObjectURL(newBlob)
+    const link = document.createElement('a')
+    link.href = data
+    link.download = fileName
+    link.click()
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(data)
+    }, 100)
+  }
+
+  const file = await fetch(fileURL)
+  const blob = await file.blob()
+
+  showFile(blob)
+}
+
+export default downloadPdf
+```
