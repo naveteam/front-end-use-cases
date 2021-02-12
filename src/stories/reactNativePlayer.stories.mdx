@@ -1,0 +1,88 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title='react-native/Player' />
+
+# React Native Video Player
+
+Esse componente tem como funcionalidade reproduzir vídeos tanto no android como no iOS. O android por padrão não vem com o comportamento de fullscreen, por isso surgiu a necessidade desse player customizado.
+
+```js
+import React, { useState, useEffect } from 'react'
+import { Platform, StyleSheet, StatusBar, Dimensions } from 'react-native'
+import PropTypes from 'prop-types'
+import VideoPlayer from 'react-native-video'
+import AndroidVideoPlayer from 'react-native-video-controls'
+import Orientation from 'react-native-orientation-locker'
+
+import { useTabNavigator } from 'context/tab-navigator'
+
+const IS_IOS = Platform.OS === 'ios'
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('screen')
+
+const Player = ({ url, ...props }) => {
+  // só necessário caso o app tenha tab de navegação inferior.
+  // lá no componente, é retornado 'null' quando o valor na context é passado pra true
+  const { showTabNavigator, hideTabNavigator } = useTabNavigator()
+
+  const [fullscreen, setFullscreen] = useState(false)
+
+  useEffect(() => {
+    if (fullscreen) {
+      hideTabNavigator()
+      Orientation.lockToLandscape()
+      StatusBar.setHidden(true)
+    }
+
+    return () => {
+      showTabNavigator()
+      Orientation.lockToPortrait()
+      StatusBar.setHidden(false)
+    }
+  }, [fullscreen, hideTabNavigator, showTabNavigator])
+
+  if (IS_IOS) {
+    return <VideoPlayer source={{ uri: url }} fullscreen={false} style={styles.default} controls {...props} />
+  }
+
+  return (
+    <AndroidVideoPlayer
+      source={{ uri: url }}
+      fullscreen={fullscreen}
+      disableBack
+      toggleResizeModeOnFullscreen={false}
+      style={fullscreen ? styles.fullscreen : styles.default}
+      onEnterFullscreen={() => setFullscreen(true)}
+      onExitFullscreen={() => setFullscreen(false)}
+      controlTimeout={5000}
+      disableVolume
+      {...props}
+    />
+  )
+}
+
+const styles = StyleSheet.create({
+  default: {
+    width: '100%',
+    height: 200
+  },
+  fullscreen: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    left: 0,
+    bottom: 0,
+    zIndex: 99,
+    elevation: 99,
+    backgroundColor: 'black',
+    width: screenHeight,
+    height: screenWidth
+  }
+})
+
+Player.propTypes = {
+  url: PropTypes.string
+}
+
+export default Player
+```
