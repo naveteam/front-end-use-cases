@@ -7,16 +7,9 @@ import { Meta } from '@storybook/addon-docs/blocks'
 Esse componente tem como finalidade substituir selects que possuem muitas opções, fazendo com que seja difícil para o usuário achar o recurso desejado. Dessa maneira, foi implementado um autocomplete com um input e um dropdown que mostra as opções filtradas.
 
 ```js
-import React, { useEffect } from 'react'
-import {
-  Keyboard,
-  TouchableOpacity,
-  TextInput,
-  Text,
-  View,
-  StyleSheet,
-  ScrollView
-} from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Keyboard, TextInput, Text, View, StyleSheet, ScrollView } from 'react-native'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 import PropTypes from 'prop-types'
 
 const getColor = (error, disabled) => {
@@ -39,15 +32,17 @@ const AutocompleteComponent = ({
   placeholder,
   ...props
 }) => {
-  const filterData = value => {
-    if (!value) {
+  const [inputValue, setInputValue] = useState('')
+
+  const filterData = inputValue => {
+    if (!inputValue) {
       return []
     }
 
-    return options.filter(element => element.label.toUpperCase().includes(value.toUpperCase()))
+    return options.filter(element => element.label.toUpperCase().includes(inputValue.toUpperCase()))
   }
 
-  const filteredData = filterData(value)
+  const filteredData = filterData(inputValue)
 
   useEffect(() => {
     register({ name })
@@ -69,36 +64,40 @@ const AutocompleteComponent = ({
       <TextInput
         style={styles.input}
         name={name}
-        onChangeText={text => onChange(name, text)}
-        value={value}
+        onChangeText={text => {
+          if (value) {
+            onChange(name, '')
+          }
+          setInputValue(text)
+        }}
+        value={inputValue}
         editable={!disabled}
         placeholder={placeholder}
         autoCapitalize='none'
       />
 
-      {(filteredData.length > 1 ||
-        (filteredData?.[0]?.label && filteredData?.[0]?.label !== value)) &&
-        !!value && (
-          <View style={[styles.dropDown, { top: label ? 70 : 40 }]}>
-            <ScrollView>
-              {filteredData?.map(
-                item => (
-                  <TouchableOpacity
-                    onPress={() => {
-                      onChange(name, item.label)
-                      Keyboard.dismiss()
-                    }}
-                    style={{ marginLeft: 8, marginVertical: 6 }}
-                    key={item.id}
-                  >
-                    <Text mt={10}>{item.label}</Text>
-                  </TouchableOpacity>
-                ),
-                []
-              )}
-            </ScrollView>
-          </View>
-        )}
+      {filteredData.length >= 1 && !value && (
+        <View style={[styles.dropDown, { top: label ? 70 : 40 }]}>
+          <ScrollView>
+            {filteredData?.map(
+              item => (
+                <TouchableOpacity
+                  onPress={() => {
+                    onChange(name, item.label)
+                    setInputValue(item.label)
+                    Keyboard.dismiss()
+                  }}
+                  style={{ marginLeft: 8, marginVertical: 6, flex: 1 }}
+                  key={item.id}
+                >
+                  <Text mt={10}>{item.label}</Text>
+                </TouchableOpacity>
+              ),
+              []
+            )}
+          </ScrollView>
+        </View>
+      )}
     </View>
   )
 }
@@ -114,7 +113,8 @@ const styles = StyleSheet.create({
     width: '100%',
     maxHeight: 200,
     borderRadius: 4,
-    position: 'absolute'
+    position: 'absolute',
+    zIndex: 9999
   },
 
   input: {
