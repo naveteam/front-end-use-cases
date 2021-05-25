@@ -7,7 +7,7 @@ import { Meta } from '@storybook/addon-docs/blocks'
 Esse componente tem como finalidade substituir selects que possuem muitas opções, fazendo com que seja difícil para o usuário achar o recurso desejado. Dessa maneira, foi implementado um autocomplete com um input e um dropdown que mostra as opções filtradas.
 
 ```js
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Keyboard, TextInput, Text, View, StyleSheet, ScrollView } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import PropTypes from 'prop-types'
@@ -42,7 +42,7 @@ const AutocompleteComponent = ({
     return options.filter(element => element.label.toUpperCase().includes(inputValue.toUpperCase()))
   }
 
-  const filteredData = filterData(inputValue)
+  const filteredData = useMemo(() => filterData(inputValue), [inputValue])
 
   useEffect(() => {
     register({ name })
@@ -83,7 +83,7 @@ const AutocompleteComponent = ({
               item => (
                 <TouchableOpacity
                   onPress={() => {
-                    onChange(name, item.label)
+                    onChange(name, item.value)
                     setInputValue(item.label)
                     Keyboard.dismiss()
                   }}
@@ -129,14 +129,17 @@ const styles = StyleSheet.create({
 
 AutocompleteComponent.propTypes = {
   label: PropTypes.string,
-  value: PropTypes.string,
+  value: PropTypes.any,
   error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
   name: PropTypes.string,
   register: PropTypes.func,
-  options: PropTypes.array
+  options: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string,
+    value: PropTypes.any
+  }))
 }
 
 export default AutocompleteComponent
