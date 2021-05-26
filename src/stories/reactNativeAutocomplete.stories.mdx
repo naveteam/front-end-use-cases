@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks'
 
-<Meta title='components/Autocomplete' component={<Autocomplete/>} />
+<Meta title='components/Autocomplete' component={<Autocomplete />} />
 
 # React Native Autocomplete
 
@@ -34,15 +34,13 @@ const AutocompleteComponent = ({
 }) => {
   const [inputValue, setInputValue] = useState('')
 
-  const filterData = inputValue => {
+  const filteredData = useMemo(() => {
     if (!inputValue) {
       return []
     }
 
     return options.filter(element => element.label.toUpperCase().includes(inputValue.toUpperCase()))
-  }
-
-  const filteredData = useMemo(() => filterData(inputValue), [inputValue])
+  }, [inputValue, options])
 
   useEffect(() => {
     register({ name })
@@ -51,12 +49,7 @@ const AutocompleteComponent = ({
   return (
     <View style={styles.container} {...props}>
       {label && (
-        <Text
-          style={{ color: getColor(error, disabled) }}
-          color={getColor(error, disabled)}
-          mb={10}
-          fontWeight={600}
-        >
+        <Text style={{ color: getColor(error, disabled) }} color={getColor(error, disabled)} mb={10} fontWeight={600}>
           {label}
         </Text>
       )}
@@ -136,10 +129,12 @@ AutocompleteComponent.propTypes = {
   disabled: PropTypes.bool,
   name: PropTypes.string,
   register: PropTypes.func,
-  options: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string,
-    value: PropTypes.any
-  }))
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string,
+      value: PropTypes.any
+    })
+  )
 }
 
 export default AutocompleteComponent
