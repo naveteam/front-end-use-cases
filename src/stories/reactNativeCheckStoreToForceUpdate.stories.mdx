@@ -1,0 +1,160 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title='react-native/CheckStoreToForceUpdate' />
+
+# Forçando a atualização do app
+
+Esse conjunto de implementações foi utilizado para impedir o uso do aplicativo quando desatualizado. Atualmente existem algumas poucas bibliotecas disponíveis no Github e no NPM, porém basicamente todas possuem essa mesma implementação, com um código não mantido há algum tempo. Por isso, tudo foi feito na mão utilizando o `axios`, o `react-native-device-info`, as API'S `Platform`, `AppState` e a `Alert` exportadas de dentro do pacote do `react-native`.
+
+### Por que utilizar a `AppState` API?
+
+Basicamente a ideia da feature era que o usuário, em nenhum cenário, utilize o aplicativo quando desatualizado. Dessa forma, se apenas utilizando um `useEffect` para disparar quando montado o compontente `StoreProvider`, infelizmente quando o aplicativo é redirecionado para a loja, portanto fica aberto no estado inativo/background, e retorna, ainda é possível continuar utilizando o aplicativo. Dessa forma, com o `AppState`, é possível interagir com a plataforma nativa para observar o atual estado da aplicação, disparando `callbacks` sempre que o atual estado muda. Sendo assim, toda vez que mudar de inativo/background para ativo, todo procedimento de comparar a atual versão com a da loja será disparado, impedindo qualquer interação com a aplicação.
+
+### Como descobrir o `IOS_APP_NAME` e `IOS_ID` da sua aplicação
+
+Basta olhar a url da página do aplicativo na Apple Store. Por exemplo, para o aplicativo fictício **Meu App**, sendo `https://apps.apple.com/us/app/meu-app/id123456789`, temos que `meu-app` é o `IOS_APP_NAME` e `123456789` é o `IOS_ID`.
+
+```js
+// utils/update.js
+
+import { getVersion } from 'react-native-device-info'
+
+const SEPARATOR = '.'
+const APP_VERSION = getVersion()
+
+export const isOutOfDate = storeVersion =>
+  Number(storeVersion.split(SEPARATOR).join('')) > Number(APP_VERSION.split(SEPARATOR).join(''))
+```
+
+```js
+// utils/store.js
+
+import { Platform } from 'react-native'
+import { getBundleId } from 'react-native-device-info'
+
+const IOS_APP_NAME = '' // Nome da aplicação na loja
+const IOS_ID = 0 // ID da aplicação na loja
+const bundleId = getBundleId()
+
+export const getPlatformSpecificRequest = Platform.select({
+  android: () => ({
+    baseURL: 'https://play.google.com',
+    endpoint: '/store/apps/details',
+    config: {
+      params: {
+        id: bundleId
+      }
+    }
+  }),
+  ios: () => ({
+    baseURL: 'https://itunes.apple.com',
+    endpoint: '/lookup',
+    config: {
+      params: {
+        bundleId
+      }
+    }
+  })
+})
+
+export const getPlatformSpecificStoreRedirectUrl = Platform.select({
+  android: () => `https://play.google.com/store/apps/details?id=${bundleId}`,
+  ios: () => `https://apps.apple.com/br/app/${IOS_APP_NAME}/id${IOS_ID}`
+})
+
+export const getPlatformSpecificStoreVersion = Platform.select({
+  android: response => response.match(/Current Version.+?>([\d.]+)<\/span>/)[1].trim(),
+  ios: response => JSON.parse(response).results[0].version
+})
+```
+
+```js
+// providers/store.js
+
+import axios from 'axios'
+
+import { getPlatformSpecificRequest } from 'src/utils'
+
+const { baseURL } = getPlatformSpecificRequest()
+
+const provider = axios.create({
+  baseURL
+})
+
+provider.interceptors.response.use(({ data }) => JSON.stringify(data))
+
+export default provider
+```
+
+```js
+// services/store.js
+
+import { store } from 'src/providers'
+
+import { getPlatformSpecificRequest, getPlatformSpecificStoreVersion } from 'src/utils'
+
+export const getStoreVersion = async () => {
+  const { endpoint, config } = getPlatformSpecificRequest()
+  const response = await store.get(endpoint, config)
+
+  return getPlatformSpecificStoreVersion(response)
+}
+```
+
+```js
+// context/store.js
+
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'react'
+import { Linking, AppState, Alert } from 'react-native'
+
+import { getStoreVersion } from 'src/services'
+
+import { getPlatformSpecificStoreRedirectUrl, isOutOfDate } from 'src/utils'
+
+export const StoreContext = createContext({})
+
+export const useStore = () => useContext(StoreContext)
+
+export const StoreProvider = ({ children }) => {
+  const [shouldUpdate, setShouldUpdate] = useState(null)
+
+  const redirectToStore = useCallback(async () => {
+    const url = getPlatformSpecificStoreRedirectUrl()
+    const isLinkingSupported = await Linking.canOpenURL(url)
+    if (isLinkingSupported) {
+      await Linking.openURL(url)
+    }
+  }, [])
+
+  const handleAppStateChange = useCallback(
+    async nextState => {
+      if (nextState !== 'active') return
+
+      try {
+        const storeVersion = await getStoreVersion()
+        const outOfDate = isOutOfDate(storeVersion)
+
+        if (outOfDate) {
+          Alert.alert(
+            '',
+            'Uma nova versão encontra-se disponível na loja e é importante para o funcionamento do aplicativo.',
+            [{ text: 'Abrir a loja', onPress: redirectToStore }]
+          )
+        }
+
+        setShouldUpdate(outOfDate)
+      } catch (exception) {
+        console.log({ exception })
+      }
+    },
+    [redirectToStore]
+  )
+
+  useEffect(() => {
+    AppState.addEventListener('change', handleAppStateChange)
+    return () => AppState.removeEventListener('change')
+  }, [handleAppStateChange])
+
+  return <StoreContext.Provider value={{ shouldUpdate, redirectToStore }}>{children}</StoreContext.Provider>
+}
+```
