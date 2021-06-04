@@ -10,6 +10,10 @@ Esse conjunto de implementações foi utilizado para impedir o uso do aplicativo
 
 Basicamente a ideia da feature era que o usuário, em nenhum cenário, utilize o aplicativo quando desatualizado. Dessa forma, se apenas utilizando um `useEffect` para disparar quando montado o compontente `StoreProvider`, infelizmente quando o aplicativo é redirecionado para a loja, portanto fica aberto no estado inativo/background, e retorna, ainda é possível continuar utilizando o aplicativo. Dessa forma, com o `AppState`, é possível interagir com a plataforma nativa para observar o atual estado da aplicação, disparando `callbacks` sempre que o atual estado muda. Sendo assim, toda vez que mudar de inativo/background para ativo, todo procedimento de comparar a atual versão com a da loja será disparado, impedindo qualquer interação com a aplicação.
 
+### Como descobrir o `IOS_APP_NAME` e `IOS_ID` da sua aplicação
+
+Basta olhar a url da página do aplicativo na Apple Store. Por exemplo, para o aplicativo fictício **Meu App**, sendo `https://apps.apple.com/us/app/meu-app/id123456789`, temos que `meu-app` é o `IOS_APP_NAME` e `123456789` é o `IOS_ID`.
+
 ```js
 // utils/update.js
 
